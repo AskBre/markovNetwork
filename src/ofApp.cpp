@@ -10,29 +10,16 @@ void ofApp::setup(){
 	box2d.setGravity(0,0);
 	box2d.createBounds();
 
-	midiMarkov.setup();
-
+	setupMidi();
 }
 
-//--------------------------------------------------------------
 void ofApp::update(){
 	box2d.update();
-	midiMarkov.update();
 
-	if(midiMarkov.newCircles.size()) {
-		addCircle(midiMarkov.newCircles.back());
-		midiMarkov.newCircles.pop_back();
-	}
-
-	if(midiMarkov.newJoints.size()) {
-		unsigned int o = midiMarkov.newJoints.back().originCircle;
-		unsigned int d = midiMarkov.newJoints.back().destinationCircle;
-		addJoint(o, d);
-		midiMarkov.newJoints.pop_back();
-	}
+	updatePianoMidiIn();
+	updateMarkovMidiIn();
 }
 
-//--------------------------------------------------------------
 void ofApp::draw(){
 	for(auto &joint : joints) {
 		ofFill();
@@ -42,7 +29,7 @@ void ofApp::draw(){
 
 	for(int i=0; i<circles.size(); i++) {
 		ofFill();
-		if(midiMarkov.noteOnIndex == i) {
+		if(markovNoteIndex == i) {
 			ofSetHexColor(0xFF3333);
 		} else {
 			ofSetHexColor(0xDDDDDD);
@@ -97,12 +84,85 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
 
-//--------------------------------------------------------------
-void ofApp::addCircle(shared_ptr<ofxBox2dCircle> circle) {
-	ofVec2f pos;
+void ofApp::exit() {
+	delete markovMidiIn;
+	delete pianoMidiIn;
+}
 
-//	pos.x = ofGetWidth()/2 + ofRandom(-20);
-//	pos.y = ofGetHeight()/2 + ofRandom(-20);
+//--------------------------------------------------------------
+void ofApp::setupMidi() {
+	try {
+		markovMidiIn = new RtMidiIn();
+		pianoMidiIn = new RtMidiIn();
+	} catch (RtMidiError &error) {
+		error.printMessage();
+	}
+
+	markovMidiIn->openVirtualPort("MarkovIn");
+	markovMidiIn->ignoreTypes(false, false, false);
+
+	pianoMidiIn->openVirtualPort("PianoIn");
+	pianoMidiIn->ignoreTypes(false, false, false);
+
+}
+
+void ofApp::updatePianoMidiIn() {
+	vector<unsigned char> midiMessage;
+	int nBytes;
+	double midiStamp;
+
+	midiStamp = pianoMidiIn->getMessage(&midiMessage);
+
+	if(midiMessage.size()) {
+		bool isOnNote = midiMessage.at(0) == 144;
+		if(isOnNote) {
+			int noteName = midiMessage.at(1);
+			int i = getIndexInCircleNotes(noteName);
+			if(i == -1) {
+				addCircle(noteName);
+			}
+		}
+	}
+}
+
+void ofApp::updateMarkovMidiIn() {
+	vector<unsigned char> midiMessage;
+	int nBytes;
+	double midiStamp;
+
+	midiStamp = markovMidiIn->getMessage(&midiMessage);
+
+	if(midiMessage.size()) {
+		bool isOnNote = midiMessage.at(0) == 144;
+		if(isOnNote) {
+			markovNoteIndex = getIndexInCircleNotes(midiMessage.at(1));
+			if(markovNoteIndex != -1 && prevMarkovNoteIndex != -1) {
+				unsigned int o = circleNames.at(prevMarkovNoteIndex);
+				unsigned int d = circleNames.at(markovNoteIndex);
+				addJoint(o, d);
+			} else if(markovNoteIndex == -1) {
+				cout << "Can't find " << midiMessage.at(1) << " in circles.";
+			}
+
+			prevMarkovNoteIndex = markovNoteIndex;
+		}
+	}
+}
+
+int ofApp::getIndexInCircleNotes(unsigned int note) {
+	for(unsigned int i = 0; i < circleNames.size(); i++) {
+		if(circleNames.at(i) == note) {
+			return i;
+		}
+	}
+
+	return -1;
+	
+}
+
+void ofApp::addCircle(unsigned int circleName) {
+	auto circle = make_shared<ofxBox2dCircle>();
+	ofVec2f pos;
 
 	pos.x = ofRandom(ofGetWidth());
 	pos.y = ofRandom(ofGetHeight());
@@ -113,6 +173,7 @@ void ofApp::addCircle(shared_ptr<ofxBox2dCircle> circle) {
 //	circle->addRepulsionForce(pos, 1.2);
 
 	circles.push_back(circle);
+	circleNames.push_back(circleName);
 
 	int nCircles = circles.size()-1;
 	if(nCircles) {

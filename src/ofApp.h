@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxBox2d.h"
-#include "MidiMarkov.h"
+#include "RtMidi.h"
 
 class ofApp : public ofBaseApp{
 	public:
@@ -21,14 +21,27 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+		void exit();
 
-		MidiMarkov midiMarkov;
-		unsigned prevMMarkovSize();
+		void setupMidi();
+		void updatePianoMidiIn();
+		void updateMarkovMidiIn();
+
+		int getIndexInCircleNotes(unsigned int note);
+
+		void addCircle(unsigned int circleName);
+		void addJoint(unsigned int originIndex, unsigned int destinationIndex);
+
+		int markovNoteIndex = -1;
+		int prevMarkovNoteIndex = -1;
+
+		RtMidiIn *markovMidiIn = 0;
+		RtMidiIn *pianoMidiIn = 0;
 
 		ofxBox2d box2d;
+		vector<unsigned int> circleNames;
 		vector<shared_ptr<ofxBox2dCircle>> circles;
+
 		vector<shared_ptr<ofxBox2dJoint>> joints;
 
-		void addCircle(shared_ptr<ofxBox2dCircle> circle);
-		void addJoint(unsigned int originIndex, unsigned int destinationIndex);
 };
