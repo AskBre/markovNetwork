@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxBox2d.h"
 #include "RtMidi.h"
 
 class ofApp : public ofBaseApp{
@@ -27,9 +26,9 @@ class ofApp : public ofBaseApp{
 		void updatePianoMidiIn();
 		void updateMarkovMidiIn();
 
-		int getIndexInCircleNotes(unsigned int note);
+		int getIndexInNodeNames(unsigned int note);
 
-		void addCircle(unsigned int circleName);
+		void addNode(unsigned int nodeName);
 		void addJoint(unsigned int originIndex, unsigned int destinationIndex);
 
 		int markovNoteIndex = -1;
@@ -38,10 +37,12 @@ class ofApp : public ofBaseApp{
 		RtMidiIn *markovMidiIn = 0;
 		RtMidiIn *pianoMidiIn = 0;
 
-		ofxBox2d box2d;
-		vector<unsigned int> circleNames;
-		vector<shared_ptr<ofxBox2dCircle>> circles;
+		vector<ofNode> nodes;
+		vector<unsigned int> nodeNames;
 
-		vector<shared_ptr<ofxBox2dJoint>> joints;
+		ofCamera cam;
+		ofLight light1;
+
+//		vector<shared_ptr<ofxBox2dJoint>> joints;
 
 };

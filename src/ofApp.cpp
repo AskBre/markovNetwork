@@ -6,36 +6,41 @@ void ofApp::setup(){
 	ofBackgroundHex(0x000000);
 	ofSetFrameRate(60);
 
-	box2d.init();
-	box2d.setGravity(0,0);
-	box2d.createBounds();
-
 	setupMidi();
 }
 
 void ofApp::update(){
-	box2d.update();
-
 	updatePianoMidiIn();
-	updateMarkovMidiIn();
+//	updateMarkovMidiIn();
 }
 
 void ofApp::draw(){
+	cam.begin();
+	ofEnableLighting();
+	light1.enable();
+	/*
 	for(auto &joint : joints) {
 		ofFill();
 		ofSetHexColor(0xAAAAAA);
 		joint->draw();
 	}
+	*/
 
-	for(int i=0; i<circles.size(); i++) {
+	ofSetHexColor(0xFFFFFF);
+	for(int i=0; i<nodes.size(); i++) {
 		ofFill();
 		if(markovNoteIndex == i) {
 			ofSetHexColor(0xFF3333);
 		} else {
 			ofSetHexColor(0xDDDDDD);
 		}
-		circles.at(i)->draw();
+		ofVec3f pos = nodes.at(i).getPosition();
+		ofDrawSphere(pos, 10);
 	}
+
+	ofLine(0, 0, ofGetWidth(), ofGetHeight());
+	light1.disable();
+	cam.end();
 }
 
 //--------------------------------------------------------------
@@ -72,7 +77,6 @@ void ofApp::mouseExited(int x, int y){
 }
 
 void ofApp::windowResized(int w, int h){
-	box2d.createBounds();
 
 }
 
@@ -117,15 +121,16 @@ void ofApp::updatePianoMidiIn() {
 		bool isOnNote = midiMessage.at(0) == 144;
 		if(isOnNote) {
 			int noteName = midiMessage.at(1);
-			int i = getIndexInCircleNotes(noteName);
+			int i = getIndexInNodeNames(noteName);
 			if(i == -1) {
-				addCircle(noteName);
+				addNode(noteName);
 			}
 		}
 	}
 }
 
 void ofApp::updateMarkovMidiIn() {
+	/*
 	vector<unsigned char> midiMessage;
 	int nBytes;
 	double midiStamp;
@@ -147,41 +152,42 @@ void ofApp::updateMarkovMidiIn() {
 			prevMarkovNoteIndex = markovNoteIndex;
 		}
 	}
+	*/
 }
 
-int ofApp::getIndexInCircleNotes(unsigned int note) {
-	for(unsigned int i = 0; i < circleNames.size(); i++) {
-		if(circleNames.at(i) == note) {
+int ofApp::getIndexInNodeNames(unsigned int note) {
+	for(unsigned int i = 0; i < nodeNames.size(); i++) {
+		if(nodeNames.at(i) == note) {
 			return i;
 		}
 	}
 
 	return -1;
-	
 }
 
-void ofApp::addCircle(unsigned int circleName) {
-	auto circle = make_shared<ofxBox2dCircle>();
-	ofVec2f pos;
+void ofApp::addNode(unsigned int nodeName) {
+	ofNode node;
+	ofVec3f pos;
 
-	pos.x = ofRandom(ofGetWidth());
+	pos.x = ofRandom(0-ofGetWidth());
 	pos.y = ofRandom(ofGetHeight());
+	pos.z = ofRandom(0-ofGetWidth());
+	pos.z -= 100;
 
-	circle->setPhysics(3.0, 0.53, 0.9);
-	circle->setup(box2d.getWorld(), pos.x, pos.y, ofRandom(10, 20));
-	circle->setMassFromShape = true;
-//	circle->addRepulsionForce(pos, 1.2);
+	node.setPosition(pos);
+	nodes.push_back(node);
+	nodeNames.push_back(nodeName);
 
-	circles.push_back(circle);
-	circleNames.push_back(circleName);
-
+	/*
 	int nCircles = circles.size()-1;
 	if(nCircles) {
 		addJoint(circles.size()-1, circles.size()-2);
 	}
+	*/
 }
 
 void ofApp::addJoint(unsigned int originIndex, unsigned int destinationIndex) {
+	/*
 	if(originIndex >= circles.size() || destinationIndex >= circles.size()) {
 		cout << "Out of Bounds in joint making" << endl;
 		return;
@@ -209,4 +215,5 @@ void ofApp::addJoint(unsigned int originIndex, unsigned int destinationIndex) {
 	int length = ofDist(dPos.x, dPos.y, oPos.x, oPos.y);	
 	joint->setLength(length);
 	joints.push_back(joint);
+	*/
 }
