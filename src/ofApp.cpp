@@ -27,7 +27,7 @@ void ofApp::update(){
 	if(midiMarkov.newJoints.size()) {
 		unsigned int o = midiMarkov.newJoints.back().originCircle;
 		unsigned int d = midiMarkov.newJoints.back().destinationCircle;
-		addJoint(o, d, 100);
+		addJoint(o, d);
 		midiMarkov.newJoints.pop_back();
 	}
 }
@@ -42,8 +42,8 @@ void ofApp::draw(){
 
 	for(int i=0; i<circles.size(); i++) {
 		ofFill();
-		if(midiMarkov.playIndex == i) {
-			ofSetHexColor(0x333333);
+		if(midiMarkov.noteOnIndex == i) {
+			ofSetHexColor(0xFF3333);
 		} else {
 			ofSetHexColor(0xDDDDDD);
 		}
@@ -85,6 +85,7 @@ void ofApp::mouseExited(int x, int y){
 }
 
 void ofApp::windowResized(int w, int h){
+	box2d.createBounds();
 
 }
 
@@ -115,15 +116,34 @@ void ofApp::addCircle(shared_ptr<ofxBox2dCircle> circle) {
 
 	int nCircles = circles.size()-1;
 	if(nCircles) {
-		addJoint(circles.size()-1, circles.size()-2, 1000);
+		addJoint(circles.size()-1, circles.size()-2);
 	}
 }
 
-void ofApp::addJoint(unsigned int originIndex, unsigned int destinationIndex, unsigned int jointLength) {
+void ofApp::addJoint(unsigned int originIndex, unsigned int destinationIndex) {
+	if(originIndex >= circles.size() || destinationIndex >= circles.size()) {
+		cout << "Out of Bounds in joint making" << endl;
+		return;
+	}
+
 	auto joint = make_shared<ofxBox2dJoint>(box2d.getWorld(), circles.at(originIndex)->body,
 			circles.at(destinationIndex)->body);
-	ofVec2f dPos = circles.at(destinationIndex)->getPosition();
-	ofVec2f oPos = circles.at(originIndex)->getPosition();
+	ofVec2f dPos;
+	ofVec2f oPos;
+
+	if(destinationIndex < circles.size()){
+		dPos = circles.at(destinationIndex)->getPosition();
+	} else {
+		cout << "destinationIndex " << destinationIndex << " out of bounds" << endl;
+		return;
+	}
+
+	if(originIndex < circles.size()){
+		oPos = circles.at(originIndex)->getPosition();
+	} else {
+		cout << "originIndex " << originIndex << " out of bounds" << endl;
+		return;
+	}
 
 	int length = ofDist(dPos.x, dPos.y, oPos.x, oPos.y);	
 	joint->setLength(length);

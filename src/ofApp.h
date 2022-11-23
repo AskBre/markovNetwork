@@ -22,7 +22,6 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-
 		MidiMarkov midiMarkov;
 		unsigned prevMMarkovSize();
 
@@ -31,5 +30,5 @@ class ofApp : public ofBaseApp{
 		vector<shared_ptr<ofxBox2dJoint>> joints;
 
 		void addCircle(shared_ptr<ofxBox2dCircle> circle);
-		void addJoint(unsigned int originIndex, unsigned int destinationIndex, unsigned int jointLength);
+		void addJoint(unsigned int originIndex, unsigned int destinationIndex);
 };

@@ -31,8 +31,7 @@ class MidiMarkov {
 		int cleanup();
 		void update();
 
-		int playIndex = 0;
-
+		int noteOnIndex = 0;
 		vector<MarkovMessage_t> markovMessages;
 		vector<shared_ptr<ofxBox2dCircle>> newCircles;
 		vector<NewJoint_t> newJoints;
@@ -42,14 +41,16 @@ class MidiMarkov {
 		RtMidiIn *midiin = 0;
 		RtMidiOut *midiout = 0;
 
-		MarkovMessage_t curMarkovMessage;
-		MarkovMessage_t prevMarkovMessage;
 		int prevPosition = -1;
+		int prevOnPosition = 0;
 		double curStamp;
 		chrono::time_point<chrono::high_resolution_clock> prevTime;
 
+		int playIndex = 0;
+
 		void updateMarkovMessages();
 		void iterateMarkovChain();
+		void playNextNote();
 		int getPositionInMarkovMessages(MarkovMessage_t &markovMessage);
 
 		void printMarkovMessage(MarkovMessage_t &markovMessage);
