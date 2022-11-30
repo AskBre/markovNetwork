@@ -30,6 +30,7 @@ class ofApp : public ofBaseApp{
 
 		void addNode(unsigned int nodeName);
 		void addJoint(unsigned int originIndex, unsigned int destinationIndex);
+		void addRibbon(ofVec3f origPos, ofVec3f destPos, float maxWidth);
 
 		int markovNoteIndex = -1;
 		int prevMarkovNoteIndex = -1;
@@ -38,11 +39,11 @@ class ofApp : public ofBaseApp{
 		RtMidiIn *pianoMidiIn = 0;
 
 		vector<ofNode> nodes;
+		vector<of3dPrimitive> ribbons;
+		vector<vector<ofPolyline>> linesLines;
 		vector<unsigned int> nodeNames;
 
 		ofCamera cam;
 		ofLight light1;
-
-//		vector<shared_ptr<ofxBox2dJoint>> joints;
-
+		ofLight light2;
 };

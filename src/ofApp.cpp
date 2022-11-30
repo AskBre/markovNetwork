@@ -1,12 +1,17 @@
 #include "ofApp.h"
-
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetVerticalSync(true);
 	ofBackgroundHex(0x000000);
 	ofSetFrameRate(60);
+	ofEnableDepthTest();
+
+	light1.setPosition(-100, 200,100);
+	light2.setPosition(100, -200,100);
+	cam.lookAt(ofVec3f(0,0,0));
 
 	setupMidi();
+
 }
 
 void ofApp::update(){
@@ -16,8 +21,12 @@ void ofApp::update(){
 
 void ofApp::draw(){
 	cam.begin();
+	float longitude = (ofGetFrameNum()%1080) * 0.25;
+//	float longitude = 300;
+	cam.orbitDeg(0, longitude, 500);
 	ofEnableLighting();
 	light1.enable();
+	light2.enable();
 	/*
 	for(auto &joint : joints) {
 		ofFill();
@@ -27,6 +36,7 @@ void ofApp::draw(){
 	*/
 
 	ofSetHexColor(0xFFFFFF);
+	ofDrawAxis(200);
 	for(int i=0; i<nodes.size(); i++) {
 		ofFill();
 		if(markovNoteIndex == i) {
@@ -34,12 +44,24 @@ void ofApp::draw(){
 		} else {
 			ofSetHexColor(0xDDDDDD);
 		}
-		ofVec3f pos = nodes.at(i).getPosition();
-		ofDrawSphere(pos, 10);
+		ofSpherePrimitive sphere;
+		sphere.setPosition(nodes.at(i).getPosition());
+		sphere.setRadius(5);
+		sphere.drawWireframe();
+	}
+	for(auto r : ribbons) {
+//		r.drawWireframe();
+		r.draw();
 	}
 
-	ofLine(0, 0, ofGetWidth(), ofGetHeight());
+	for(auto lines : linesLines) {
+		for(auto l : lines) {
+			l.draw();
+		}
+	}
+
 	light1.disable();
+	light2.disable();
 	cam.end();
 }
 
@@ -129,6 +151,7 @@ void ofApp::updatePianoMidiIn() {
 	}
 }
 
+
 void ofApp::updateMarkovMidiIn() {
 	/*
 	vector<unsigned char> midiMessage;
@@ -169,20 +192,67 @@ void ofApp::addNode(unsigned int nodeName) {
 	ofNode node;
 	ofVec3f pos;
 
-	pos.x = ofRandom(0-ofGetWidth());
-	pos.y = ofRandom(ofGetHeight());
-	pos.z = ofRandom(0-ofGetWidth());
-	pos.z -= 100;
+	int dist = 100;
+	pos.x = ofRandom(-dist, dist);
+	pos.y = ofRandom(-dist, dist);
+	pos.z = ofRandom(-dist, dist);
 
 	node.setPosition(pos);
 	nodes.push_back(node);
 	nodeNames.push_back(nodeName);
 
-	/*
-	int nCircles = circles.size()-1;
-	if(nCircles) {
-		addJoint(circles.size()-1, circles.size()-2);
+	int nNodes = nodes.size()-1;
+	if(nNodes) {
+		ofVec3f pos1 = nodes.at(nodes.size()-1).getPosition();
+		ofVec3f pos2 = nodes.at(nodes.size()-2).getPosition();
+		addRibbon(pos1, pos2, 5);
 	}
+}
+
+
+void ofApp::addRibbon(ofVec3f origPos, ofVec3f destPos, float maxWidth) {
+	unsigned int resolution = 50;
+	ofVec3f pos = origPos;
+	vector<ofPolyline> lines;
+
+	for(unsigned int i=0; i<resolution; i++) {
+		ofPolyline line;
+		ofVec3f middlePos;
+		middlePos = origPos.getInterpolated(destPos, 0.5);
+		float p = ofNormalize(i, 0, resolution);
+
+		ofVec3f randPos;
+		randPos.x = ofRandom(-maxWidth, maxWidth);
+		randPos.y = ofRandom(-maxWidth, maxWidth);
+		randPos.z = ofRandom(-maxWidth, maxWidth);
+		ofVec3f cPos = middlePos + randPos;
+
+		line.addVertex(origPos);
+		line.quadBezierTo(origPos.x, origPos.y, origPos.z,
+				cPos.x, cPos.y, cPos.z,
+				destPos.x, destPos.y, destPos.z);
+		lines.push_back(line);
+	}
+
+	linesLines.push_back(lines);
+
+	/*
+	ofMesh ribbon;
+//	ribbon.setupIndicesAuto();
+	for(int j=0; j<lines.size()-1; j++) {
+		for(int i=0; i<lines.at(0).getVertices().size(); i++) {
+			ribbon.addVertex(lines.at(j)[i]);
+			int nextRib = (j+1)%lines.size();
+			ribbon.addVertex(lines.at(nextRib)[i]);
+		}
+		for(int i=lines.at(0).getVertices().size(); i>0; i--) {
+			ribbon.addVertex(lines.at(j)[i]);
+			int nextRib = (j-1)%lines.size();
+			ribbon.addVertex(lines.at(nextRib)[i]);
+		}
+	}
+
+	ribbons.push_back(ribbon);
 	*/
 }
 

@@ -90,7 +90,7 @@ void MidiMarkov::playNextNote() {
 		playIndex = markovMessages.at(playIndex).succeedingMessages.at(rand() % maxRand);
 		midiout->sendMessage(&markovMessages.at(playIndex).message);
 		if(markovMessages.at(playIndex).message.at(0) == 144) noteOnIndex = floor(playIndex*0.5);
-//		printMarkovMessage(markovMessages.at(playIndex));
+		printMarkovMessage(markovMessages.at(playIndex));
 	}
 }
 
@@ -123,7 +123,7 @@ int MidiMarkov::getPositionInMarkovMessages(MarkovMessage_t &markovMessage) {
 		markovMessage.pos = markovMessages.size();
 		markovMessages.push_back(markovMessage);
 //		cout << "Is New" << endl;
-		printMarkovMessage(markovMessage);
+//		printMarkovMessage(markovMessage);
 		if(isNoteOn) addCircle();
 		pos = markovMessage.pos;
 	}
