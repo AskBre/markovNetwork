@@ -11,17 +11,26 @@ void ofApp::setup(){
 	cam.lookAt(ofVec3f(0,0,0));
 
 	setupMidi();
+
+	//For debugging visuals
+	for(int i = 0; i<20; i++) addNode(i);
 }
 
 void ofApp::update(){
 	updatePianoMidiIn();
 	updateMarkovMidiIn();
+
+	if(!(int)ofRandom(10)) {
+		ofVec3f o = nodes.at(ofRandom(9)).getPosition();
+		ofVec3f d = nodes.at(ofRandom(9)).getPosition();
+		addSynapse(o, d);
+	}
 }
 
 void ofApp::draw(){
 	cam.begin();
-	float longitude = (ofGetFrameNum()%2880)*0.125;
-	cam.orbitDeg(longitude, longitude, 500);
+	float longitude = (ofGetFrameNum()%5760)*0.0625;
+	cam.orbitDeg(longitude, longitude, 400);
 	ofEnableLighting();
 	light1.enable();
 	light2.enable();
@@ -34,9 +43,10 @@ void ofApp::draw(){
 		} else {
 			ofSetHexColor(0xDDDDDD);
 		}
-		ofSpherePrimitive sphere;
+		ofIcoSpherePrimitive sphere;
 		sphere.setPosition(nodes.at(i).getPosition());
-		sphere.setRadius(3);
+		sphere.setResolution(1);
+		sphere.setRadius(2);
 		sphere.drawWireframe();
 	}
 
@@ -87,11 +97,13 @@ void ofApp::updatePianoMidiIn() {
 			if(noteIndex == -1) {
 				addNode(noteName);
 			} 
+
 			if (noteIndex != -1 && prevNoteIndex != -1) {
 				ofVec3f o = nodes.at(prevNoteIndex).getPosition();
 				ofVec3f d = nodes.at(noteIndex).getPosition();
 				addSynapse(o, d);
 			}
+
 			prevNoteIndex = noteIndex;
 		}
 	}
@@ -156,6 +168,11 @@ void ofApp::addSynapse(ofVec3f origPos, ofVec3f destPos) {
 	randPos.y = ofRandom(-maxWidth, maxWidth);
 	randPos.z = ofRandom(-maxWidth, maxWidth);
 	ofVec3f cPos = middlePos + randPos;
+
+	randPos.x = ofRandom(-maxWidth, maxWidth);
+	randPos.y = ofRandom(-maxWidth, maxWidth);
+	randPos.z = ofRandom(-maxWidth, maxWidth);
+	middlePos += randPos;
 
 	synapse.addVertex(origPos);
 	synapse.quadBezierTo(origPos.x, origPos.y, origPos.z,
