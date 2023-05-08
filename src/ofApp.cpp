@@ -5,6 +5,7 @@ void ofApp::setup(){
 	ofBackgroundHex(0x000000);
 	ofSetFrameRate(60);
 	ofEnableDepthTest();
+	ofEnableAntiAliasing();
 
 	light1.setPosition(-100, 200,100);
 	light2.setPosition(100, -200,100);
@@ -13,24 +14,27 @@ void ofApp::setup(){
 	setupMidi();
 
 	//For debugging visuals
-	for(int i = 0; i<20; i++) addNode(i);
+//	for(int i = 0; i<20; i++) addNode(i);
 }
 
 void ofApp::update(){
 	updatePianoMidiIn();
 	updateMarkovMidiIn();
 
+	//For debugging visuals
+	/*
 	if(!(int)ofRandom(10)) {
 		ofVec3f o = nodes.at(ofRandom(9)).getPosition();
 		ofVec3f d = nodes.at(ofRandom(9)).getPosition();
 		addSynapse(o, d);
 	}
+	*/
 }
 
 void ofApp::draw(){
 	cam.begin();
 	float longitude = (ofGetFrameNum()%5760)*0.0625;
-	cam.orbitDeg(longitude, longitude, 400);
+	cam.orbitDeg(longitude, longitude, 320);
 	ofEnableLighting();
 	light1.enable();
 	light2.enable();
