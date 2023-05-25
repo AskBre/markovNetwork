@@ -14,6 +14,8 @@ class ofApp : public ofBaseApp{
 		void updatePianoMidiIn();
 		void updateMarkovMidiIn();
 
+		bool isAutoPopulateVisuals = true;
+
 		int getIndexInNodeNames(unsigned int note);
 
 		void addNode(unsigned int nodeName);

@@ -13,22 +13,20 @@ void ofApp::setup(){
 
 	setupMidi();
 
-	//For debugging visuals
-//	for(int i = 0; i<20; i++) addNode(i);
+	if(isAutoPopulateVisuals) for(int i = 0; i<20; i++) addNode(i);
 }
 
 void ofApp::update(){
 	updatePianoMidiIn();
 	updateMarkovMidiIn();
 
-	//For debugging visuals
-	/*
-	if(!(int)ofRandom(10)) {
-		ofVec3f o = nodes.at(ofRandom(9)).getPosition();
-		ofVec3f d = nodes.at(ofRandom(9)).getPosition();
-		addSynapse(o, d);
+	if(isAutoPopulateVisuals) {
+		if(!(int)ofRandom(10)) {
+			ofVec3f o = nodes.at(ofRandom(9)).getPosition();
+			ofVec3f d = nodes.at(ofRandom(9)).getPosition();
+			addSynapse(o, d);
+		}
 	}
-	*/
 }
 
 void ofApp::draw(){
